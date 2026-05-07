@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بروتوكولات هندسة البرمجيات</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #0f1217;
+    --card: #141920;
+    --border: #1e2530;
+    --border-glow: #2a3545;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: #7a6230;
+    --teal: #2dd4bf;
+    --teal-dim: #0d4a44;
+    --red: #f87171;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Cairo', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND GRID ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── GLOW ORBS ── */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.12;
+  }
+  .orb-1 { width: 500px; height: 500px; background: var(--gold); top: -100px; right: -100px; }
+  .orb-2 { width: 400px; height: 400px; background: var(--teal); bottom: -100px; left: -100px; }
+  .orb-3 { width: 300px; height: 300px; background: #6366f1; top: 50%; left: 50%; opacity: 0.06; }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,12,16,0.8);
+    backdrop-filter: blur(20px);
+    padding: 0 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+    position: sticky;
+    top: 0;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-top: 1px;
+    font-family: var(--mono);
+  }
+
+  nav {
+    display: flex;
+    gap: 4px;
+  }
+
+  nav a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    font-weight: 600;
+  }
+  nav a:hover { color: var(--text); background: var(--border); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 80px 48px 64px;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--gold-dim);
+    background: rgba(201,168,76,0.06);
+    color: var(--gold);
+    font-size: 12px;
+    font-family: var(--mono);
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    letter-spacing: 0.5px;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  h1 {
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fff 0%, var(--gold-light) 50%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    color: var(--text-dim);
+    font-size: 17px;
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  /* ── CARDS GRID ── */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 32px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* ── PROMPT CARD ── */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .prompt-card:nth-child(1) { animation-delay: 0.1s; }
+  .prompt-card:nth-child(2) { animation-delay: 0.2s; }
+  .prompt-card:nth-child(3) { animation-delay: 0.3s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .prompt-card:hover {
+    border-color: var(--border-glow);
+    box-shadow: 0 0 0 1px rgba(201,168,76,0.08), 0 24px 60px rgba(0,0,0,0.4);
+  }
+
+  /* ── CARD HEADER ── */
+  .card-header {
+    padding: 24px 28px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .card-header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .card-1 .card-header { background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, transparent 60%); }
+  .card-2 .card-header { background: linear-gradient(135deg, rgba(45,212,191,0.06) 0%, transparent 60%); }
+  .card-3 .card-header { background: linear-gradient(135deg, rgba(248,113,113,0.06) 0%, transparent 60%); }
+
+  .card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .card-number {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .card-1 .card-number { color: var(--gold-dim); }
+  .card-2 .card-number { color: var(--teal-dim); }
+  .card-3 .card-number { color: #7f3030; }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .card-subtitle {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .card-1 .card-subtitle { color: var(--gold-dim); }
+  .card-2 .card-subtitle { color: #1a5e58; }
+  .card-3 .card-subtitle { color: #7f3030; }
+
+  .card-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .card-1 .card-icon { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.2); }
+  .card-2 .card-icon { background: rgba(45,212,191,0.1); border: 1px solid rgba(45,212,191,0.2); }
+  .card-3 .card-icon { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2); }
+
+  /* ── PROMPT BODY ── */
+  .card-body {
+    padding: 24px 28px;
+  }
+
+  .prompt-text {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--text-dim);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 360px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+    cursor: text;
+    user-select: all;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+
+  .prompt-text:hover {
+    border-color: var(--border-glow);
+  }
+
+  .prompt-text::-webkit-scrollbar { width: 4px; }
+  .prompt-text::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 4px; }
+
+  /* ── SECTIONS INSIDE PROMPT ── */
+  .prompt-text .section-title {
+    display: block;
+    color: var(--gold-light);
+    font-weight: 700;
+    margin-top: 16px;
+    margin-bottom: 4px;
+  }
+
+  /* ── ACTIONS ── */
+  .card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .btn-copy {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .card-1 .btn-copy {
+    background: rgba(201,168,76,0.12);
+    color: var(--gold-light);
+    border: 1px solid rgba(201,168,76,0.25);
+  }
+  .card-1 .btn-copy:hover {
+    background: rgba(201,168,76,0.22);
+    box-shadow: 0 0 20px rgba(201,168,76,0.2);
+    transform: translateY(-1px);
+  }
+
+  .card-2 .btn-copy {
+    background: rgba(45,212,191,0.1);
+    color: var(--teal);
+    border: 1px solid rgba(45,212,191,0.2);
+  }
+  .card-2 .btn-copy:hover {
+    background: rgba(45,212,191,0.2);
+    box-shadow: 0 0 20px rgba(45,212,191,0.2);
+    transform: translateY(-1px);
+  }
+
+  .card-3 .btn-copy {
+    background: rgba(248,113,113,0.1);
+    color: var(--red);
+    border: 1px solid rgba(248,113,113,0.2);
+  }
+  .card-3 .btn-copy:hover {
+    background: rgba(248,113,113,0.2);
+    box-shadow: 0 0 20px rgba(248,113,113,0.2);
+    transform: translateY(-1px);
+  }
+
+  .btn-copy.copied {
+    opacity: 0.7;
+    transform: scale(0.97);
+  }
+
+  .btn-copy svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  /* ── PROTOCOLS PREVIEW ── */
+  .protocols-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .proto-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .card-1 .proto-tag { border-color: rgba(201,168,76,0.15); color: var(--gold-dim); }
+  .card-2 .proto-tag { border-color: rgba(45,212,191,0.15); color: #1a6b65; }
+  .card-3 .proto-tag { border-color: rgba(248,113,113,0.15); color: #7f3030; }
+
+  /* ── DIVIDER ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 28px;
+    margin: 4px 0;
+  }
+  .section-divider-line { flex: 1; height: 1px; background: var(--border); }
+  .section-divider-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 24px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .footer-dot { color: var(--gold-dim); }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--card);
+    border: 1px solid var(--gold-dim);
+    color: var(--gold-light);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 9999;
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    opacity: 0;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .toast svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* ── ALL COPY BTN ── */
+  .copy-all-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 10px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--gold-dim);
+    background: rgba(201,168,76,0.07);
+    color: var(--gold);
+    transition: all 0.2s;
+    margin-top: 0;
+  }
+  .copy-all-btn:hover {
+    background: rgba(201,168,76,0.15);
+    box-shadow: 0 0 24px rgba(201,168,76,0.15);
+    transform: translateY(-1px);
+  }
+  .copy-all-btn svg { width: 15px; height: 15px; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚙</div>
+    <div>
+      <div class="logo-text">Engineering Protocols</div>
+      <div class="logo-sub">بروتوكولات هندسة البرمجيات</div>
+    </div>
+  </div>
+  <nav>
+    <a href="#planning">التخطيط</a>
+    <a href="#execution">التنفيذ</a>
+    <a href="#editing">التعديل</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">v1.0 · Staff Engineer Level · Production-Ready</div>
+  <h1>بروتوكولات هندسة البرمجيات</h1>
+  <p>ثلاثة بروتوكولات متكاملة للتخطيط والتنفيذ والتعديل — صُمِّمت لضمان جودة إنتاجية عالية وصيانة سهلة وتوسعية آمنة.</p>
+</div>
+
+<!-- CARDS -->
+<div class="container">
+
+  <!-- CARD 1: PLANNING -->
+  <div class="prompt-card card-1" id="planning">
+    <div class="card-header">
+      <div class="card-meta">
+        <span class="card-number">PROTOCOL · 01</span>
+        <div class="card-title">برومبت التخطيط المطوّر</div>
+        <div class="card-subtitle">The Planning Protocol</div>
+      </div>
+      <div class="card-icon">🏗</div>
+    </div>
+
+    <div class="card-body">
+      <div class="protocols-list">
+        <span class="proto-tag">الوعي الزمني</span>
+        <span class="proto-tag">No Feature Creep</span>
+        <span class="proto-tag">Surgical Architecture</span>
+        <span class="proto-tag">Safe Logging</span>
+        <span class="proto-tag">PROJECT_MAP.md</span>
+      </div>
+
+      <div class="section-divider" style="margin-top:16px; padding:0;">
+        <div class="section-divider-line"></div>
+        <span class="section-divider-label">النص الكامل</span>
+        <div class="section-divider-line"></div>
+      </div>
+
+      <div class="prompt-text" id="text-1">[الدور والمسؤولية] أنت الآن تعمل بصفة Staff Software Engineer ومدير تقني Tech Lead. مهمتك التخطيط المعماري الصارم للمشروع التالي: [أدخل وصف المشروع هنا]
+
+[قواعد ما قبل التتخطيط] قبل البدء بالبروتوكولات، يجب أن تطبق مبدأ "Think Before Coding":
+
+حدد افتراضاتك حول المتطلبات بوضوح.
+إذا وجد غموض في المتطلبات، توقف واسأل فوراً؛ لا تختار مساراً بصمت.
+اقترح الحل الأبسط (Simplicity First) وارفض أي تعقيدات غير ضرورية.
+
+[البروتوكولات الإلزامية - تنفيذ تسلسلي] البروتوكول الأول: الوعي الزمني وموثوقية التبعيات
+
+مهم جدا:حدد السنة والشهر من النظام باستخدام shell. إذا نجحت في ذلك ابحث في المستودعات الرسمية (npm, GitHub) عن أحدث الإصدارات المستقرة الى هذا التاريخ.
+وثّق الإصدارات وتجنب الـ Deprecated تماماً.
+
+البروتوكول الثاني: التدفق المنطقي ومنع زحف الميزات (No Feature Creep)
+
+التزم بالنطاق المطلوب فقط. لا ميزات إضافية، لا مرونة غير مطلوبة.
+ارسم رحلة المستخدم (GUI) أو تدفق البيانات (API) كـ "أهداف قابلة للتحقق".
+
+البروتوكول الثالث: المعمارية الذكية والتجريد الواقعي (Surgical Architecture)
+
+طبق مبدأ "Simplicity First": أقل قدر من الكود يحل المشكلة.
+أنشئ طبقة Shared/Core فقط للمنطق المتكرر فعلياً، لا تجرد كوداً سيُستخدم مرة واحدة.
+التزم بالتقسيم المعتمد على الميزات (Domain-Driven) مع منع تفتيت الملفات (No Micro-files).
+
+البروتوكول الرابع: استراتيجية التتبع (Safe Logging)
+
+صمم نظام Logging غير حظري (Asynchronous) وبسيط، يدعم المستويات الأساسية فقط دون التأثير على الأداء.
+
+البروتوكول الخامس: تأسيس الذاكرة الخارجية (PROJECT_MAP.md)
+
+أنشئ محتوى الملف متضمناً: [TECH_STACK], [SYSTEM_FLOW], [ARCHITECTURE], وقسم [ORPHANS & PENDING] لتتبع النواقص.
+
+[الموجز المطلوب] قدم المخرجات أعلاه بلغة تقنية مكثفة ودقيقة جدا، مع خطة عمل (Milestones) تعتمد "نجاح الأهداف" (Verifiable Goals). انتظر الموافقة.</div>
+
+      <div class="card-actions">
+        <span class="hint">اضغط على النص لتحديده كاملاً</span>
+        <button class="btn-copy" onclick="copyText('text-1', this, 'toast-1')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          نسخ البرومبت
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 2: EXECUTION -->
+  <div class="prompt-card card-2" id="execution">
+    <div class="card-header">
+      <div class="card-meta">
+        <span class="card-number">PROTOCOL · 02</span>
+        <div class="card-title">برومبت التنفيذ المطوّر</div>
+        <div class="card-subtitle">The Execution Engine</div>
+      </div>
+      <div class="card-icon">⚡</div>
+    </div>
+
+    <div class="card-body">
+      <div class="protocols-list">
+        <span class="proto-tag">Production-Ready</span>
+        <span class="proto-tag">Loop Until Verified</span>
+        <span class="proto-tag">State Sync</span>
+        <span class="proto-tag">Flow Adherence</span>
+      </div>
+
+      <div class="section-divider" style="margin-top:16px; padding:0;">
+        <div class="section-divider-line"></div>
+        <span class="section-divider-label">النص الكامل</span>
+        <div class="section-divider-line"></div>
+      </div>
+
+      <div class="prompt-text" id="text-2">[تفويض التنفيذ المستمر - وعي كامل بالمنتج] أنت الآن Tech Lead المسؤول عن تحويل الخطة و PROJECT_MAP.md إلى منتج نهائي. لديك صلاحية التنفيذ الكامل بدون توقف.
+
+[معايير التنفيذ
+
+بساطة التنفيذ: إذا كان يمكن كتابة 50 سطراً بدلاً من 200، افعل ذلك. لا برمجيات تخمينية.
+التنفيذ الموجه بالأهداف: لكل ميزة، حدد (معيار النجاح) قبل كتابة كودها، ولا تنتقل لما بعدها حتى يتحقق المعيار.
+
+[بروتوكولات العمل الذاتي] البروتوكول الأول: جودة الكود الجاهز (Production-Ready)
+
+يمنع منعاً باتاً الـ Placeholders أو // TODO. الكود يجب أن يكون كاملاً، معالجاً للأخطاء، ومربوطاً بالـ Logging.
+
+البروتوكول الثاني: التحقق الذاتي (Loop Until Verified)
+
+اكتب اختبارات تلقائية أو قم بمحاكاة التدفق لكل جزء. لا تترك "mess" خلفك؛ نظف الأكواد اليتيمة التي تسببت أنت بها فقط.
+تأكد داخلياً من عدم وجود Regression (تدمير للميزات السابقة).
+
+البروتوكول الثالث: المزامنة الحية (State Sync)
+
+حدّث PROJECT_MAP.md ديناميكياً. أي ميزة لم تُربط بعد يجب أن تظهر في [ORPHANS & PENDING] فوراً، وتُحذف عند الاكتمال.
+
+البروتوكول الرابع: الالتزام بالتدفق (Flow Adherence)
+
+ارجع دوماً لـ [SYSTEM_FLOW]. كل سطر يجب أن يخدم رحلة المستخدم المطلوبة فقط.
+
+[أمر الانطلاق] ابدأ التنفيذ التسلسلي الآن. لكل خطوة: (1. نفذ -> 2. تحقق -> 3. حدّث الخريطة). لا تتوقف حتى يصبح قسم [ORPHANS & PENDING] فارغاً والمنتج كاملاً.</div>
+
+      <div class="card-actions">
+        <span class="hint">اضغط على النص لتحديده كاملاً</span>
+        <button class="btn-copy" onclick="copyText('text-2', this, 'toast-2')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          نسخ البرومبت
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 3: EDITING -->
+  <div class="prompt-card card-3" id="editing">
+    <div class="card-header">
+      <div class="card-meta">
+        <span class="card-number">PROTOCOL · 03</span>
+        <div class="card-title">برومبت التعديل المطوّر</div>
+        <div class="card-subtitle">Surgical Editing Protocol</div>
+      </div>
+      <div class="card-icon">🔬</div>
+    </div>
+
+    <div class="card-body">
+      <div class="protocols-list">
+        <span class="proto-tag">Impact Analysis</span>
+        <span class="proto-tag">DRY + Shared Core</span>
+        <span class="proto-tag">TDD · No Regression</span>
+        <span class="proto-tag">State Sync</span>
+      </div>
+
+      <div class="section-divider" style="margin-top:16px; padding:0;">
+        <div class="section-divider-line"></div>
+        <span class="section-divider-label">النص الكامل</span>
+        <div class="section-divider-line"></div>
+      </div>
+
+      <div class="prompt-text" id="text-3">[الدور والمهمة] أنت Staff Software Engineer. المطلوب جراحة برمجية للمشروع للقيام بالتعديل التالي (دون تخريب الميزات الأخرى) :
+
+[وصف التعديل/الميزة].
+
+[قواعد التعديل الجراحي (Surgical Changes)]
+
+المس فقط ما يجب لمسه: لا تحسن تنسيق كود مجاور، لا تعد صياغة تعليقات قديمة، لا تقم بـ Refactoring لكود يعمل ما لم يُطلب منك ذلك.
+مطابقة الأسلوب: التزم بأسلوب الكود الحالي تماماً حتى لو كنت تراه غير مثالي.
+تنظيف مخلفاتك فقط: إذا تسبب تعديلك في جعل دالة أو Import "يتيماً"، فقم بإزالته. لا تلمس الأكواد الميتة القديمة.
+
+[بروتوكول التحليل والتنفيذ] البروتوكول الأول: تحليل التأثير (Impact Analysis)
+
+اقرأ PROJECT_MAP.md. حدد الملفات المتأثرة بدقة. ابحث عن أحدث التقنيات إذا استلزم الأمر.
+
+البروتوكول الثاني: السلامة المعمارية والتجريد
+
+التزم بـ DRY (لا تكرر الكود) واستخدم طبقة Shared/Core. أضف Logging للتعديل الجديد.
+
+البروتوكول الثالث: التحقق والنجاح (Goal-Driven)
+
+حول التعديل إلى "هدف قابل للتحقق". اكتب الاختبار، تأكد من فشله، ثم اجعله ينجح (TDD).
+تأكد من نجاح اختبارات الميزات القديمة (No Regression).
+
+البروتوكول الرابع: مزامنة الحالة
+
+حدّث PROJECT_MAP.md فوراً. أي كود أصبح Deprecated بسبب تعديلك يجب أن يُعالج أو يُسجل في النواقص.
+
+[أمر التنفيذ] نفذ البروتوكولات بشكل مستمر. ابدأ بتحليل التأثير وذكر الافتراضات (Think Before Coding)، ثم انتقل للتنفيذ الجراحي المباشر.</div>
+
+      <div class="card-actions">
+        <span class="hint">اضغط على النص لتحديده كاملاً</span>
+        <button class="btn-copy" onclick="copyText('text-3', this, 'toast-3')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          نسخ البرومبت
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span>Engineering Protocols</span>
+  <span class="footer-dot">◆</span>
+  <span>Staff Engineer Level</span>
+  <span class="footer-dot">◆</span>
+  <span>Production-Ready</span>
+</footer>
+
+<!-- TOAST NOTIFICATIONS -->
+<div class="toast" id="toast-1">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+  تم نسخ البروتوكول الأول ✓
+</div>
+<div class="toast" id="toast-2">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+  تم نسخ البروتوكول الثاني ✓
+</div>
+<div class="toast" id="toast-3">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+  تم نسخ البروتوكول الثالث ✓
+</div>
+
+<script>
+  let toastTimer = null;
+
+  function copyText(elementId, btn, toastId) {
+    const el = document.getElementById(elementId);
+    const text = el.innerText;
+
+    navigator.clipboard.writeText(text).then(() => {
+      // Button feedback
+      const originalHTML = btn.innerHTML;
+      btn.classList.add('copied');
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        تم النسخ!
+      `;
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.innerHTML = originalHTML;
+      }, 2000);
+
+      // Toast
+      showToast(toastId);
+    }).catch(() => {
+      // Fallback: select text
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    });
+  }
+
+  function showToast(toastId) {
+    // Hide all toasts
+    document.querySelectorAll('.toast').forEach(t => t.classList.remove('show'));
+    if (toastTimer) clearTimeout(toastTimer);
+
+    const toast = document.getElementById(toastId);
+    toast.classList.add('show');
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // Click on text area selects all
+  document.querySelectorAll('.prompt-text').forEach(el => {
+    el.addEventListener('click', function() {
+      const range = document.createRange();
+      range.selectNodeContents(this);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    });
+  });
+</script>
+</body>
+</html>
